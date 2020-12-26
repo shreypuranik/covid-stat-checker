@@ -13,6 +13,7 @@ class GetLatestStatsCommand extends Command
   protected static $defaultName = 'covid-stat-checker:get-latest-covid-stats';
 
   protected $localities = [
+      //Put comma separated list of localities here
   ];
 
   protected $regions = [
@@ -80,6 +81,15 @@ class GetLatestStatsCommand extends Command
 
         }
 
+        $vaccinationDataApiUrl = 'https://coronavirus.data.gov.uk/api/v1/data?filters=areaType=overview;areaName=United%2520Kingdom&structure=%7B%22date%22:%22date%22,%22newPeopleReceivingFirstDose%22:%22newPeopleReceivingFirstDose%22,%22cumPeopleReceivingFirstDose%22:%22cumPeopleReceivingFirstDose%22%7D';
+        $response = $this->client->request(
+            'GET',
+            $vaccinationDataApiUrl
+        );
+
+        $vaccinationDataContent = $response->toArray();
+        $peopleWithFirstDose = $vaccinationDataContent['data'][0]['cumPeopleReceivingFirstDose'];
+
         $dateTime = new \DateTime();
 
         $output->writeLn(['']);
@@ -104,6 +114,12 @@ class GetLatestStatsCommand extends Command
         $table->setHeaders(['Local Area', 'Case Count']);
         $table->setRows($tableData);
         $table->render();
+
+        $output->writeLn(['']);
+
+        $output->writeln([
+            'Total population with first dose of vaccination: ' . number_format($peopleWithFirstDose)
+        ]);
 
         $output->writeLn(['']);
 
